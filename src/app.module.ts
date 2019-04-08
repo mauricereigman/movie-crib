@@ -13,7 +13,7 @@ import { ShowsService } from './services/shows/shows.service';
 		TypeOrmModule.forRoot({
 			type: 'postgres',
 			host: '0.0.0.0',
-			port: 5433,
+			port: 5436,
 			username: 'postgres',
 			password: 'root',
 			database: 'tv-shows-api',
