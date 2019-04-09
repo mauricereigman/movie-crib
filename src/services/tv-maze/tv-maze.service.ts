@@ -1,21 +1,23 @@
-import { HttpService, Injectable } from '@nestjs/common';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, filter, map, retry, switchMap, take, tap } from 'rxjs/operators';
-import { ITvMazeShow } from './tv-maze-show.interface';
-import { ITvMazeCastMemberResponse } from './tv-maze-cast-member.interface';
-import { TvMazeShowWithCastMember } from './tv-maze-show-with-cast-member.model';
-import { TvMazeCastMember } from './tv-maze-cast-member.model';
-import { TvMazeShow } from './tv-maze-show.model';
+import {HttpService, Injectable} from '@nestjs/common';
+import {BehaviorSubject, Observable, throwError, timer} from 'rxjs';
+import {catchError, delay, delayWhen, filter, map, retry, retryWhen, switchMap, take, tap} from 'rxjs/operators';
+import {ITvMazeShow} from './tv-maze-show.interface';
+import {ITvMazeCastMemberResponse} from './tv-maze-cast-member.interface';
+import {TvMazeShowWithCastMember} from './tv-maze-show-with-cast-member.model';
+import {TvMazeCastMember} from './tv-maze-cast-member.model';
+import {TvMazeShow} from './tv-maze-show.model';
 
 @Injectable()
 export class TvMazeService {
 	private static readonly api = 'http://api.tvmaze.com/shows';
-	public static readonly maxSimultaniousRequests = 20;
+	public static readonly maxSimultaniousShowRequests = 1;
+	public static readonly maxSimultaniousCastMemberRequests = 10;
 
 	private readonly activeShowRequestsSubject = new BehaviorSubject<any[]>([]);
 	private readonly activeCastMemberRequestsSubject = new BehaviorSubject<any[]>([]);
 
-	constructor(private readonly http: HttpService) {}
+	constructor(private readonly http: HttpService) {
+	}
 
 	public async showsWithCastMembers(page: number): Promise<TvMazeShowWithCastMember[]> {
 		const tvMazeShows = await this.shows(page);
@@ -29,11 +31,12 @@ export class TvMazeService {
 			.pipe(
 				take(1),
 				map(axiosResponse => axiosResponse.data.map(TvMazeService.createTvMazeShow)),
-				tap(_ => console.log(`retrieved ${_.length} shows`, )),
+				tap(_ => console.log(`retrieved ${_.length} shows`,)),
 				retry(5),
+				retryWhen(TvMazeService.retryWithDelay),
 				catchError(error => TvMazeService.handleError(error)),
 			);
-		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeShowRequestsSubject, page).toPromise();
+		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeShowRequestsSubject, page, TvMazeService.maxSimultaniousShowRequests).toPromise();
 	}
 
 	public castMembers(showId: number = 1): Promise<TvMazeCastMember[]> {
@@ -41,11 +44,11 @@ export class TvMazeService {
 			.pipe(
 				take(1),
 				map(axiosResponse => axiosResponse.data.map(TvMazeService.createTvMazeCastMember)),
-				tap(_ => console.log(`retrieved ${_.length} castMembers`, )),
-				retry(5),
+				tap(_ => console.log(`retrieved ${_.length} castMembers`,)),
+				retryWhen(TvMazeService.retryWithDelay),
 				catchError(error => TvMazeService.handleError(error)),
 			);
-		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeCastMemberRequestsSubject, showId).toPromise();
+		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeCastMemberRequestsSubject, showId, TvMazeService.maxSimultaniousCastMemberRequests).toPromise();
 	}
 
 	private static createTvMazeCastMember(castMember: ITvMazeCastMemberResponse) {
@@ -60,12 +63,13 @@ export class TvMazeService {
 		request$: Observable<T>,
 		activeRequestsSubject: BehaviorSubject<any[]>,
 		element: any,
+		maxSimultaniousRequests: number
 	): Observable<T> {
-		const maxParallelRequestCountExceeded = activeRequestsSubject.getValue().length >= TvMazeService.maxSimultaniousRequests;
+		const maxParallelRequestCountExceeded = activeRequestsSubject.getValue().length >= maxSimultaniousRequests;
 		if (!maxParallelRequestCountExceeded) {
 			TvMazeService.addActiveRequest(activeRequestsSubject, element);
 		}
-		const delayedRequest = maxParallelRequestCountExceeded ? TvMazeService.delayedRequest(request$, activeRequestsSubject, element) : request$ ;
+		const delayedRequest = maxParallelRequestCountExceeded ? TvMazeService.delayedRequest(request$, activeRequestsSubject, element, maxSimultaniousRequests) : request$;
 		// add request buffer stack removal logic to delayed AND proceeded requests when observable resolves
 		return delayedRequest.pipe(
 			tap(() => TvMazeService.removeActiveRequest(activeRequestsSubject, element)),
@@ -76,17 +80,25 @@ export class TvMazeService {
 		);
 	}
 
+	private static retryWithDelay(errorMessage$: Observable<string>) {
+		return errorMessage$.pipe(
+			tap(error => console.warn(`${error}.... retrying`)),
+			delay(6000)
+		)
+	}
+
 	private static handleError(error) {
 		return throwError(`error occured while importing data ${error}`);
 	}
 
 	private static delayedRequest<T>(request$: Observable<T>,
 	                                 activeRequestsSubject: BehaviorSubject<any[]>,
-	                                 element: any): Observable<any> {
+	                                 element: any,
+	                                 maxSimultaniousRequests: number): Observable<any> {
 		return activeRequestsSubject.pipe(
-			filter(currentlyActiveRequests => currentlyActiveRequests.length < TvMazeService.maxSimultaniousRequests),
+			filter(currentlyActiveRequests => currentlyActiveRequests.length < maxSimultaniousRequests),
 			take(1),
-			map(() => TvMazeService.delayRequestWhenOverMaxCount(request$, activeRequestsSubject, element)),
+			map(() => TvMazeService.delayRequestWhenOverMaxCount(request$, activeRequestsSubject, element, maxSimultaniousRequests)),
 			switchMap(() => request$),
 		);
 	}
