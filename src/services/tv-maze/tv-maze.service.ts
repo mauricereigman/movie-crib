@@ -60,13 +60,13 @@ export class TvMazeService {
 		request$: Observable<T>,
 		activeRequestsSubject: BehaviorSubject<any[]>,
 		element: any,
-		maxSimultaniousRequests: number
+		maxSimultaneousRequests: number
 	): Observable<T> {
-		const maxParallelRequestCountExceeded = activeRequestsSubject.getValue().length >= maxSimultaniousRequests;
+		const maxParallelRequestCountExceeded = activeRequestsSubject.getValue().length >= maxSimultaneousRequests;
 		if (!maxParallelRequestCountExceeded) {
 			TvMazeService.addActiveRequest(activeRequestsSubject, element);
 		}
-		const delayedRequest = maxParallelRequestCountExceeded ? TvMazeService.delayedRequest(request$, activeRequestsSubject, element, maxSimultaniousRequests) : request$;
+		const delayedRequest = maxParallelRequestCountExceeded ? TvMazeService.delayedRequest(request$, activeRequestsSubject, element, maxSimultaneousRequests) : request$;
 		// add request buffer stack removal logic to delayed AND proceeded requests when observable resolves
 		return delayedRequest.pipe(
 			tap(() => TvMazeService.removeActiveRequest(activeRequestsSubject, element)),
