@@ -10,10 +10,14 @@ import {TvMazeShow} from './tv-maze-show.model';
 @Injectable()
 export class TvMazeService {
 	private static readonly api = 'http://api.tvmaze.com/shows';
-	public static readonly maxSimultaneousRequests = 5;
-	private readonly activeRequestsSubject = new BehaviorSubject<any[]>([]);
+	public static readonly maxSimultaneousCastMemberRequests = 5;
+	public static readonly maxSimultaneousShowRequests = 1;
+	private readonly activeCastMemberRequestsSubject = new BehaviorSubject<any[]>([]);
+	private readonly activeShowRequestsSubject = new BehaviorSubject<any[]>([]);
+
 
 	constructor(private readonly http: HttpService) {
+		this.activeShowRequestsSubject.subscribe(_ => console.log("activeShowRequestsSubject", _.length))
 	}
 
 	public async showsWithCastMembers(page: number): Promise<TvMazeShowWithCastMember[]> {
@@ -33,7 +37,7 @@ export class TvMazeService {
 				retryWhen(TvMazeService.retryWithDelay),
 				catchError(error => TvMazeService.handleError(page, 'shows')),
 			);
-		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeRequestsSubject, page, TvMazeService.maxSimultaneousRequests).toPromise();
+		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeShowRequestsSubject, page, TvMazeService.maxSimultaneousShowRequests).toPromise();
 	}
 
 	public castMembers(showId: number = 1): Promise<TvMazeCastMember[]> {
@@ -45,7 +49,7 @@ export class TvMazeService {
 				retryWhen(TvMazeService.retryWithDelay),
 				catchError(error => TvMazeService.handleError(showId, 'castmembers')),
 			);
-		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeRequestsSubject, showId, TvMazeService.maxSimultaneousRequests).toPromise();
+		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeCastMemberRequestsSubject, showId, TvMazeService.maxSimultaneousCastMemberRequests).toPromise();
 	}
 
 	private static createTvMazeCastMember(castMember: ITvMazeCastMemberResponse) {
