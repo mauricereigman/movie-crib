@@ -1,5 +1,5 @@
 import {HttpService, Injectable} from '@nestjs/common';
-import {BehaviorSubject, Observable, throwError, timer} from 'rxjs';
+import {BehaviorSubject, ErrorObserver, Observable, throwError, timer} from 'rxjs';
 import {catchError, delay, delayWhen, filter, map, retry, retryWhen, switchMap, take, tap} from 'rxjs/operators';
 import {ITvMazeShow} from './tv-maze-show.interface';
 import {ITvMazeCastMemberResponse} from './tv-maze-cast-member.interface';
@@ -23,7 +23,7 @@ export class TvMazeService {
 		return await Promise.all(tvMazeShowsWithCastMembers);
 	}
 
-	public shows(page: number = 1): Promise<ITvMazeShow[]> {
+	public shows(page: number = 1): Promise<TvMazeShow[]> {
 		const request$ = this.http.get<ITvMazeShow[]>(`${TvMazeService.api}?page=${page}`)
 			.pipe(
 				take(1),
@@ -31,7 +31,7 @@ export class TvMazeService {
 				tap(_ => console.log(`retrieved ${_.length} shows`,)),
 				retry(5),
 				retryWhen(TvMazeService.retryWithDelay),
-				catchError(error => TvMazeService.handleError(error)),
+				catchError(error => TvMazeService.handleError(page, 'shows')),
 			);
 		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeRequestsSubject, page, TvMazeService.maxSimultaneousRequests).toPromise();
 	}
@@ -43,7 +43,7 @@ export class TvMazeService {
 				map(axiosResponse => axiosResponse.data.map(TvMazeService.createTvMazeCastMember)),
 				tap(_ => console.log(`retrieved ${_.length} castMembers`,)),
 				retryWhen(TvMazeService.retryWithDelay),
-				catchError(error => TvMazeService.handleError(error)),
+				catchError(error => TvMazeService.handleError(showId, 'castmembers')),
 			);
 		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeRequestsSubject, showId, TvMazeService.maxSimultaneousRequests).toPromise();
 	}
@@ -72,7 +72,7 @@ export class TvMazeService {
 			tap(() => TvMazeService.removeActiveRequest(activeRequestsSubject, element)),
 			catchError(error => {
 				TvMazeService.removeActiveRequest(activeRequestsSubject, element);
-				return TvMazeService.handleError(error)
+				return error;
 			}),
 		);
 	}
@@ -84,8 +84,13 @@ export class TvMazeService {
 		)
 	}
 
-	private static handleError(error) {
-		return throwError(`error occured while importing data ${error}`);
+	private static handleError(key: number, context: 'castmembers' | 'shows'): Observable<never> {
+		switch (context) {
+			case 'castmembers':
+				return throwError(`error occured while importing data for ${context} request for show with id: ${key}`);
+			case 'shows':
+				return throwError(`error occured while importing data for ${context} request with pagenumber: ${key}`);
+		}
 	}
 
 	private static delayedRequest<T>(request$: Observable<T>,
