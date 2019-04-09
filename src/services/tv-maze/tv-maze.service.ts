@@ -64,7 +64,7 @@ export class TvMazeService {
 		request$: Observable<T>,
 		activeRequestsSubject: BehaviorSubject<any[]>,
 		element: any,
-		maxSimultaneousRequests: number
+		maxSimultaneousRequests: number,
 	): Observable<T> {
 		const maxParallelRequestCountExceeded = activeRequestsSubject.getValue().length >= maxSimultaneousRequests;
 		if (!maxParallelRequestCountExceeded) {
@@ -100,14 +100,13 @@ export class TvMazeService {
 	private static delayedRequest<T>(request$: Observable<T>,
 	                                 activeRequestsSubject: BehaviorSubject<any[]>,
 	                                 element: any,
-	                                 maxSimultaniousRequests: number): Observable<any> {
+	                                 maxSimultaneousRequests: number): Observable<any> {
 		console.warn('too many requests, delaying request: ', element);
 		return activeRequestsSubject.pipe(
-			filter(currentlyActiveRequests => currentlyActiveRequests.length < maxSimultaniousRequests),
-			tap(() => console.warn('request slots are open again, trying to resume request: ', element)),
+			filter(currentlyActiveRequests => currentlyActiveRequests.length < maxSimultaneousRequests),
+			delay(5000), // add additional delay for retry to prevent 429 status to many requests
 			take(1),
-			map(() => TvMazeService.delayRequestWhenOverMaxCount(request$, activeRequestsSubject, element, maxSimultaniousRequests)),
-			switchMap(() => request$),
+			switchMap(() => TvMazeService.delayRequestWhenOverMaxCount(request$, activeRequestsSubject, element, maxSimultaneousRequests)),
 		);
 	}
 
