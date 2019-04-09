@@ -21,7 +21,7 @@ export class ShowsController {
 	@Get('import')
 	public async importShowsAndCastMembers(@Req() request: Request): Promise<string> {
 		request.setTimeout(0, () => {});
-		const savedShows = await this.saveShows(5);
+		const savedShows = await this.saveShows(10);
 		return `succesfully saved ${savedShows.length} shows`;
 	}
 

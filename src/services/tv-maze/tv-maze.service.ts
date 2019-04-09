@@ -10,11 +10,8 @@ import {TvMazeShow} from './tv-maze-show.model';
 @Injectable()
 export class TvMazeService {
 	private static readonly api = 'http://api.tvmaze.com/shows';
-	public static readonly maxSimultaniousShowRequests = 1;
-	public static readonly maxSimultaniousCastMemberRequests = 10;
-
-	private readonly activeShowRequestsSubject = new BehaviorSubject<any[]>([]);
-	private readonly activeCastMemberRequestsSubject = new BehaviorSubject<any[]>([]);
+	public static readonly maxSimultaneousRequests = 5;
+	private readonly activeRequestsSubject = new BehaviorSubject<any[]>([]);
 
 	constructor(private readonly http: HttpService) {
 	}
@@ -36,7 +33,7 @@ export class TvMazeService {
 				retryWhen(TvMazeService.retryWithDelay),
 				catchError(error => TvMazeService.handleError(error)),
 			);
-		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeShowRequestsSubject, page, TvMazeService.maxSimultaniousShowRequests).toPromise();
+		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeRequestsSubject, page, TvMazeService.maxSimultaneousRequests).toPromise();
 	}
 
 	public castMembers(showId: number = 1): Promise<TvMazeCastMember[]> {
@@ -48,7 +45,7 @@ export class TvMazeService {
 				retryWhen(TvMazeService.retryWithDelay),
 				catchError(error => TvMazeService.handleError(error)),
 			);
-		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeCastMemberRequestsSubject, showId, TvMazeService.maxSimultaniousCastMemberRequests).toPromise();
+		return TvMazeService.delayRequestWhenOverMaxCount(request$, this.activeRequestsSubject, showId, TvMazeService.maxSimultaneousRequests).toPromise();
 	}
 
 	private static createTvMazeCastMember(castMember: ITvMazeCastMemberResponse) {
@@ -95,8 +92,10 @@ export class TvMazeService {
 	                                 activeRequestsSubject: BehaviorSubject<any[]>,
 	                                 element: any,
 	                                 maxSimultaniousRequests: number): Observable<any> {
+		console.warn('too many requests, delaying request: ', element);
 		return activeRequestsSubject.pipe(
 			filter(currentlyActiveRequests => currentlyActiveRequests.length < maxSimultaniousRequests),
+			tap(() => console.warn('request slots are open again, trying to resume request: ', element)),
 			take(1),
 			map(() => TvMazeService.delayRequestWhenOverMaxCount(request$, activeRequestsSubject, element, maxSimultaniousRequests)),
 			switchMap(() => request$),
