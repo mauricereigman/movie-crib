@@ -5,6 +5,7 @@ import { ShowEntity } from '../../entities/show.entity';
 import { ApiUseTags } from '@nestjs/swagger';
 import { DeleteResult } from 'typeorm';
 import {Request} from 'express';
+import {arrayOfSize} from '../../utils/array-of-size';
 
 @ApiUseTags('shows')
 @Controller('shows')
@@ -31,16 +32,10 @@ export class ShowsController {
 	}
 
 	private async saveShows(amountOfPaginatedRequests: number): Promise<ShowEntity[]> {
-		return ShowsController.createArrayOfSize(amountOfPaginatedRequests)
+		return  arrayOfSize(amountOfPaginatedRequests)
 			.map(async pageNumber => {
 				const tvMazeShowsWithCastMembers = await this.tvMazeService.showsWithCastMembers(pageNumber);
-				const tvMazeShows = await tvMazeShowsWithCastMembers;
-				const showEntities = tvMazeShows.map(show => show.toDatabaseModel());
-				return this.showsService.saveShows(await showEntities);
-			}).reduce(async (prev, curr) => [...await prev, ...await curr]);
-	}
-
-	private static createArrayOfSize(amount: number): number[] {
-		return [...new Array(amount)].map((value, index) => index);
+				return tvMazeShowsWithCastMembers.map(show => show.toDatabaseModel());
+			}).reduce(async (prev, curr) => [...await prev, ...await curr])
 	}
 }

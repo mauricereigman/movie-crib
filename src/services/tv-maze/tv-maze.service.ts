@@ -101,7 +101,6 @@ export class TvMazeService {
 	                                 activeRequestsSubject: BehaviorSubject<any[]>,
 	                                 element: any,
 	                                 maxSimultaneousRequests: number): Observable<any> {
-		console.warn('too many requests, delaying request: ', element);
 		return activeRequestsSubject.pipe(
 			filter(currentlyActiveRequests => currentlyActiveRequests.length < maxSimultaneousRequests),
 			delay(5000), // add additional delay for retry to prevent 429 status to many requests
