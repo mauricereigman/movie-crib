@@ -15,9 +15,7 @@ export class TvMazeService {
 	private readonly activeCastMemberRequestsSubject = new BehaviorSubject<any[]>([]);
 	private readonly activeShowRequestsSubject = new BehaviorSubject<any[]>([]);
 
-
 	constructor(private readonly http: HttpService) {
-		this.activeShowRequestsSubject.subscribe(_ => console.log("activeShowRequestsSubject", _.length))
 	}
 
 	public async showsWithCastMembers(page: number): Promise<TvMazeShowWithCastMember[]> {
