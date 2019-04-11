@@ -31,7 +31,7 @@ export class ShowsController {
 	}
 
 	private async saveShows(amountOfPaginatedRequests: number): Promise<ShowEntity[]> {
-		return ShowsController.numericArray(amountOfPaginatedRequests)
+		return ShowsController.createArrayOfSize(amountOfPaginatedRequests)
 			.map(async pageNumber => {
 				const tvMazeShowsWithCastMembers = await this.tvMazeService.showsWithCastMembers(pageNumber);
 				const tvMazeShows = await tvMazeShowsWithCastMembers;
@@ -40,7 +40,7 @@ export class ShowsController {
 			}).reduce(async (prev, curr) => [...await prev, ...await curr]);
 	}
 
-	private static numericArray(amount: number): number[] {
+	private static createArrayOfSize(amount: number): number[] {
 		return [...new Array(amount)].map((value, index) => index);
 	}
 }
