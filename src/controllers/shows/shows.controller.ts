@@ -23,7 +23,7 @@ export class ShowsController {
 	public async importShowsAndCastMembers(@Req() request: Request): Promise<string> {
 		request.setTimeout(0, () => {});
 		const savedShows = await this.saveShows(10);
-		return `succesfully saved ${savedShows.length} shows`;
+		return `successfully saved ${savedShows.length} shows`;
 	}
 
 	@Delete('import')

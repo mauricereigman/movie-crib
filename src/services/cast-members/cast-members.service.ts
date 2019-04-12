@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { ShowEntity } from '../../entities/show.entity';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CastMemberEntity } from '../../entities/cast-member.entity';
+import {Injectable} from '@nestjs/common';
+import {Repository} from 'typeorm';
+import {InjectRepository} from '@nestjs/typeorm';
+import {CastMemberEntity} from '../../entities/cast-member.entity';
 
 @Injectable()
 export class CastMembersService {

@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ShowEntity } from '../../entities/show.entity';
-import { DeleteResult, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import {Injectable} from '@nestjs/common';
+import {ShowEntity} from '../../entities/show.entity';
+import {DeleteResult, Repository} from 'typeorm';
+import {InjectRepository} from '@nestjs/typeorm';
 
 @Injectable()
 export class ShowsService {
@@ -27,8 +27,7 @@ export class ShowsService {
 			skip: page * ShowsService.pageSize,
 		});
 		return shows.map(show => {
-			const sortedCastMembers = show.castMembers.sort((a, b) => new Date(b.birthday).getTime() - new Date(a.birthday).getTime());
-			show.castMembers = sortedCastMembers;
+			show.castMembers = show.castMembers.sort((a, b) => new Date(b.birthday).getTime() - new Date(a.birthday).getTime());
 			return show;
 		});
 	}
