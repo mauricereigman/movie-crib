@@ -6,6 +6,8 @@ import { ApiUseTags } from '@nestjs/swagger';
 import { DeleteResult } from 'typeorm';
 import {Request} from 'express';
 import {arrayOfSize} from '../../utils/array-of-size';
+import {Observable} from 'rxjs';
+import {map, reduce, scan, switchMap, takeUntil, tap} from 'rxjs/operators';
 
 @ApiUseTags('shows')
 @Controller('shows')
@@ -20,10 +22,11 @@ export class ShowsController {
 	}
 
 	@Get('import')
-	public async importShowsAndCastMembers(@Req() request: Request): Promise<string> {
-		request.setTimeout(0, () => {});
-		const savedShows = await this.saveShows(10);
-		return `successfully saved ${savedShows.length} shows`;
+	public importShows(@Req() request: Request): Observable<string> {
+		return this.saveShows(150)
+			.pipe(
+				map(shows => `successfully saved ${shows.length} shows`)
+			)
 	}
 
 	@Delete('import')
@@ -31,11 +34,11 @@ export class ShowsController {
 		return this.showsService.deleteShows();
 	}
 
-	private async saveShows(amountOfPaginatedRequests: number): Promise<ShowEntity[]> {
-		return  arrayOfSize(amountOfPaginatedRequests)
-			.map(async pageNumber => {
-				const tvMazeShowsWithCastMembers = await this.tvMazeService.showsWithCastMembers(pageNumber);
-				return tvMazeShowsWithCastMembers.map(show => show.toDatabaseModel());
-			}).reduce(async (prev, curr) => [...await prev, ...await curr])
+	private saveShows(amountOfPaginatedRequests: number): Observable<ShowEntity[]> {
+		return this.tvMazeService.showsStream$(amountOfPaginatedRequests)
+			.pipe(
+				map(shows => shows.map(show => show.toDatabaseModel())),
+				switchMap(dbShows => this.showsService.saveShows(dbShows)),
+			);
 	}
 }

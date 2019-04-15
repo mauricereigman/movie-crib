@@ -7,7 +7,7 @@ async function bootstrap() {
 
 	const options = new DocumentBuilder()
 		.setTitle('TVMAZE API')
-		.setDescription('api for finding shows')
+		.setDescription('api for finding showsStream$')
 		.setVersion('1.0')
 		.addTag('TVMAZE API')
 		.build();

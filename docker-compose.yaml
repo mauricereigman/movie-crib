@@ -6,4 +6,4 @@ services:
     ports:
       - 5436:5432
     environment:
-      POSTGRES_DB: tv-shows-api
+      POSTGRES_DB: tv-showsStream$-api

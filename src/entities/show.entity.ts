@@ -16,4 +16,8 @@ export class ShowEntity {
 		this.name = name;
 		this.castMembers = castMembers;
 	}
+
+	public withCastMembers(castMembers: CastMemberEntity[]): ShowEntity {
+		return new ShowEntity(this.id, this.name, castMembers)
+	}
 }
