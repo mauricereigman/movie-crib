@@ -10,7 +10,7 @@ import {arrayOfSize} from '../../utils/array-of-size';
 
 @Injectable()
 export class TvMazeService {
-	private static readonly api = 'http://api.tvmaze.com/shows';
+	public static readonly api = 'http://api.tvmaze.com/shows';
 
 	constructor(private readonly http: HttpService) {
 		this.http.axiosRef.interceptors.request.use(config => {
@@ -26,6 +26,7 @@ export class TvMazeService {
 					.pipe(
 						take(1),
 						map(axiosResponse => axiosResponse.data.map(TvMazeService.createTvMazeShow)),
+						tap(_ => console.log(_)),
 						tap(_ => console.log(`retrieved ${_.length} shows`)),
 						switchMap(shows => shows.map(show => this.castMembers$(show.id)
 							.pipe(map(castMembers => new TvMazeShowWithCastMember(show.id, show.name, castMembers))))
@@ -39,7 +40,7 @@ export class TvMazeService {
 		return concat(...requests);
 	}
 
-	public castMembers$(showId: number = 1): Observable<TvMazeCastMember[]> {
+	private castMembers$(showId: number = 1): Observable<TvMazeCastMember[]> {
 		return this.http.get<ITvMazeCastMemberResponse[]>(`${TvMazeService.api}/${showId}/cast`)
 			.pipe(
 				take(1),

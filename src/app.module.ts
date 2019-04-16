@@ -22,7 +22,10 @@ import {ShowsService} from './services/shows/shows.service';
 			logging: false,
 		}),
 		TypeOrmModule.forFeature([ShowEntity, CastMemberEntity]),
-		HttpModule,
+		HttpModule.register({
+			timeout: 50000,
+			maxRedirects: 5,
+		}),
 	],
 	controllers: [ShowsController, CastMembersController],
 	providers: [TvMazeService, CastMembersService, ShowsService],
