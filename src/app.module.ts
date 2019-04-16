@@ -1,12 +1,12 @@
-import { HttpModule, Module } from '@nestjs/common';
-import { ShowsController } from './controllers/shows/shows.controller';
-import { CastMembersController } from './controllers/cast-members/cast-members.controller';
-import { CastMembersService } from './services/cast-members/cast-members.service';
-import { TvMazeService } from './services/tv-maze/tv-maze.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { CastMemberEntity } from './entities/cast-member.entity';
-import { ShowEntity } from './entities/show.entity';
-import { ShowsService } from './services/shows/shows.service';
+import {HttpModule, Module} from '@nestjs/common';
+import {ShowsController} from './controllers/shows/shows.controller';
+import {CastMembersController} from './controllers/cast-members/cast-members.controller';
+import {CastMembersService} from './services/cast-members/cast-members.service';
+import {TvMazeService} from './services/tv-maze/tv-maze.service';
+import {TypeOrmModule} from '@nestjs/typeorm';
+import {CastMemberEntity} from './entities/cast-member.entity';
+import {ShowEntity} from './entities/show.entity';
+import {ShowsService} from './services/shows/shows.service';
 
 @Module({
 	imports: [

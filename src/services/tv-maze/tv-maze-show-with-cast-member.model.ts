@@ -1,6 +1,5 @@
-import { TvMazeCastMember } from './tv-maze-cast-member.model';
-import { ITvMazeCastMember } from './tv-maze-cast-member.interface';
-import { ShowEntity } from '../../entities/show.entity';
+import {TvMazeCastMember} from './tv-maze-cast-member.model';
+import {ShowEntity} from '../../entities/show.entity';
 
 export class TvMazeShowWithCastMember implements TvMazeShowWithCastMember {
 	constructor(

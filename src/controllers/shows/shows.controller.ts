@@ -1,13 +1,12 @@
-import { Controller, Delete, Get, Query, Req } from '@nestjs/common';
-import { TvMazeService } from '../../services/tv-maze/tv-maze.service';
-import { ShowsService } from '../../services/shows/shows.service';
-import { ShowEntity } from '../../entities/show.entity';
-import { ApiUseTags } from '@nestjs/swagger';
-import { DeleteResult } from 'typeorm';
+import {Controller, Delete, Get, Query, Req} from '@nestjs/common';
+import {TvMazeService} from '../../services/tv-maze/tv-maze.service';
+import {ShowsService} from '../../services/shows/shows.service';
+import {ShowEntity} from '../../entities/show.entity';
+import {ApiUseTags} from '@nestjs/swagger';
+import {DeleteResult} from 'typeorm';
 import {Request} from 'express';
-import {arrayOfSize} from '../../utils/array-of-size';
 import {Observable} from 'rxjs';
-import {map, reduce, scan, switchMap, takeUntil, tap} from 'rxjs/operators';
+import {map, switchMap} from 'rxjs/operators';
 
 @ApiUseTags('shows')
 @Controller('shows')

@@ -1,6 +1,6 @@
 import {HttpService, Injectable} from '@nestjs/common';
-import {BehaviorSubject, concat, forkJoin, merge, Observable, Subject, throwError, timer} from 'rxjs';
-import {catchError, concatMap, map, retry, retryWhen, switchMap, take, tap, toArray} from 'rxjs/operators';
+import {concat, Observable, throwError, timer} from 'rxjs';
+import {catchError, concatMap, map, retryWhen, switchMap, take, tap, toArray} from 'rxjs/operators';
 import {ITvMazeShow} from './tv-maze-show.interface';
 import {ITvMazeCastMemberResponse} from './tv-maze-cast-member.interface';
 import {TvMazeShowWithCastMember} from './tv-maze-show-with-cast-member.model';

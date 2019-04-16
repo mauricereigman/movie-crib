@@ -1,5 +1,5 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { CastMemberEntity } from './cast-member.entity';
+import {Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {CastMemberEntity} from './cast-member.entity';
 
 @Entity('Show')
 export class ShowEntity {

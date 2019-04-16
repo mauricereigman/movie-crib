@@ -1,5 +1,5 @@
-import { ITvMazeCastMember } from './tv-maze-cast-member.interface';
-import { CastMemberEntity } from '../../entities/cast-member.entity';
+import {ITvMazeCastMember} from './tv-maze-cast-member.interface';
+import {CastMemberEntity} from '../../entities/cast-member.entity';
 
 export class TvMazeCastMember implements ITvMazeCastMember {
 	constructor(public readonly id: number,
