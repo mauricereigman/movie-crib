@@ -1,0 +1,11 @@
+{
+  "type": "postgres",
+  "host": "db",
+  "port": 5432,
+  "username": "postgres",
+  "password": "root",
+  "database": "tv-shows-api",
+  "entities": ["src/**/*.entity{.ts,.js}"],
+  "synchronize": true,
+  "logging": false
+}

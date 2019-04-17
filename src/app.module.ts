@@ -8,19 +8,10 @@ import {CastMemberEntity} from './entities/cast-member.entity';
 import {ShowEntity} from './entities/show.entity';
 import {ShowsService} from './services/shows/shows.service';
 
+console.log(__dirname);
 @Module({
 	imports: [
-		TypeOrmModule.forRoot({
-			type: 'postgres',
-			host: '0.0.0.0',
-			port: 5436,
-			username: 'postgres',
-			password: 'root',
-			database: 'tv-shows-api',
-			entities: [__dirname + '/**/*.entity{.ts,.js}'],
-			synchronize: true,
-			logging: false,
-		}),
+		TypeOrmModule.forRoot(),
 		TypeOrmModule.forFeature([ShowEntity, CastMemberEntity]),
 		HttpModule.register({
 			timeout: 50000,

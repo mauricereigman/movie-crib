@@ -1,9 +1,27 @@
 version: '3.7'
 services:
-  postgres:
+  db:
     image: postgres:11-alpine
     restart: unless-stopped
     ports:
       - 5436:5432
     environment:
-      POSTGRES_DB: tv-showsStream$-api
+      POSTGRES_DB: tv-shows-api
+    volumes:
+      - ./docker/db:/var/lib/postgresql/data
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: 'node'
+    depends_on:
+      - db
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./:/home/node/app
+      - ./ormconfig.docker.json:/home/node/app/ormconfig.json
+    ports:
+      - 8081:3000
+    command: 'npm start'

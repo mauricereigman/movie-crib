@@ -8,15 +8,16 @@ tv-maze import application used to import a dataset from tvmaze and store in in 
 $ npm install
 ```
 
-### db setup & start/stop
+## Running the app
 ```bash
 $ docker-compose up -d
 ```
 ```bash
 $ docker-compose down -v
 ```
+#### navigate to localhost:8081/api
 
-## Running the app
+### local for dev mode
 
 ```bash
 # development
